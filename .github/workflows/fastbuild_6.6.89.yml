@@ -118,6 +118,32 @@ jobs:
           rm -rf build-tools.zip &
           
           wait
+
+echo "正在下载MSM DRM显示驱动源码..."
+# 克隆OnePlus官方的驱动源码
+git clone --depth=1 --branch=oneplus/sm8750_b_16.0.0_oneplus_13 \
+  https://github.com/OnePlusOSS/android_kernel_modules_and_devicetree_oneplus_sm8750.git \
+  oneplus-drivers
+
+echo "正在复制MSM DRM源码到内核目录..."
+# 复制MSM驱动文件到内核源码中
+if [ -d "oneplus-drivers/vendor/qcom/opensource/display-drivers/msm" ]; then
+    # 创建目标目录
+    mkdir -p common/drivers/gpu/drm/msm
+    # 复制所有文件
+    cp -r oneplus-drivers/vendor/qcom/opensource/display-drivers/msm/* common/drivers/gpu/drm/msm/
+    echo "MSM DRM源码复制完成"
+else
+    echo "错误：找不到MSM驱动目录"
+    # 尝试列出目录结构以便调试
+    find oneplus-drivers -type f -name "*.c" | head -20
+    exit 1
+fi
+
+# 清理临时目录
+rm -rf oneplus-drivers
+
+echo "所有源码及llvm-Clang18工具链初始化完成！"
           echo "所有源码及llvm-Clang18工具链初始化完成！"
           echo "正在去除 ABI 保护 & 去除 dirty 后缀..."
           rm common/android/abi_gki_protected_exports_* || true
